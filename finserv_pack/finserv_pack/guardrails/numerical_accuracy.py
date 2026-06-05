@@ -98,9 +98,10 @@ def _normalize(value: str) -> float | None:
     try:
         cleaned = value.replace("$", "").replace(",", "").replace("%", "").strip()
         multiplier = 1.0
+        value_lower = value.lower()
         for suffix, mult in _SUFFIX_MULTIPLIERS:
-            if suffix in value:
-                cleaned = cleaned.replace(suffix, "").strip()
+            if suffix.lower() in value_lower:
+                cleaned = re.sub(re.escape(suffix), "", cleaned, flags=re.IGNORECASE).strip()
                 multiplier = mult
                 break
         return float(cleaned) * multiplier

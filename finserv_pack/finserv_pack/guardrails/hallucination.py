@@ -71,6 +71,19 @@ class HallucinationValidator:
                     action="block",
                     details="Substantial response generated with no source context",
                 )
+            # No usable context; clear the sentinel so it is not treated as
+            # grounding text in the overlap/embedding checks below.
+            ctx = TraceContext(
+                query=ctx.query,
+                response=ctx.response,
+                context="",
+                source_chunks=ctx.source_chunks,
+                trace_id=ctx.trace_id,
+                tenant_id=ctx.tenant_id,
+                model_id=ctx.model_id,
+                data_tier=ctx.data_tier,
+                metadata=ctx.metadata,
+            )
 
         sentences = [s.strip() for s in _SENTENCE_SPLIT.split(ctx.response) if len(s.strip()) > 20]
         if not sentences:
