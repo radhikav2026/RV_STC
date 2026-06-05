@@ -93,16 +93,15 @@ class CPNIPrivacyValidator:
                 regulation="47 USC 222",
             )
 
-        # Severity escalation
+        # Severity escalation — each factor independently raises severity:
+        #   critical+block: unauthenticated, multi-category, or location data
+        #   high+warn:      single non-location category, authenticated
         category_count = len(findings)
         has_location = "location_data" in findings
         unauthenticated = not ctx.authenticated
 
-        if has_location and unauthenticated or (category_count >= 2 or unauthenticated):
+        if unauthenticated or category_count >= 2 or has_location:
             severity = "critical"
-            action = "block"
-        elif has_location:
-            severity = "high"
             action = "block"
         else:
             severity = "high"

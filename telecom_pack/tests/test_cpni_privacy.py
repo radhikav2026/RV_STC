@@ -40,6 +40,9 @@ async def test_detects_location_data(validator: CPNIPrivacyValidator) -> None:
     result = await validator.evaluate(_ctx("Your phone last connected to cell tower ID BTS-4421 near downtown."))
     assert result.passed is False
     assert "location_data" in result.evidence["categories"]
+    # Location data is always critical, even when authenticated
+    assert result.severity == "critical"
+    assert result.action == "block"
 
 
 async def test_detects_network_identifiers(validator: CPNIPrivacyValidator) -> None:
