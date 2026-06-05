@@ -16,10 +16,10 @@ from __future__ import annotations
 import asyncio
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from typing import Any
 
 from stc_framework._internal.metrics_safe import safe_inc, safe_observe
+from stc_framework._internal.ttl import now_iso
 from stc_framework.errors import StalwartDispatchFailed, WorkflowBudgetExhausted
 from stc_framework.governance.budget_controls import BurstController
 from stc_framework.governance.events import AuditEvent
@@ -58,7 +58,7 @@ class WorkflowState:
     results: list[TaskResult] = field(default_factory=list)
     total_cost_usd: float = 0.0
     status: str = "pending"
-    started_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    started_at: str = field(default_factory=now_iso)
     completed_at: str | None = None
 
 
@@ -149,7 +149,7 @@ class WorkflowOrchestrator:
         ]
         engine_out = await self._engine.invoke(tasks=task_dicts, dispatcher=dispatcher)
         state.status = engine_out["status"]
-        state.completed_at = datetime.now(timezone.utc).isoformat()
+        state.completed_at = now_iso()
         duration_ms = (time.perf_counter() - start) * 1000.0
         safe_observe(get_metrics().workflow_duration_ms, duration_ms, workflow_type="generic")
         if self._store is not None:

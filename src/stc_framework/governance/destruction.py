@@ -28,11 +28,11 @@ from __future__ import annotations
 import os
 import secrets
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Any, Protocol, runtime_checkable
 
+from stc_framework._internal.ttl import now_iso
 from stc_framework.errors import LegalHoldActive
 from stc_framework.governance.events import AuditEvent
 from stc_framework.observability.audit import AuditLogger, AuditRecord
@@ -52,7 +52,7 @@ class DestructionRecord:
     artifact: str  # path, key id, or resource id depending on store
     method: DestructionMethod
     verified: bool
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(default_factory=now_iso)
     actor: str = "retention_sweep"
     reason: str = ""
     metadata: dict[str, Any] = field(default_factory=dict)

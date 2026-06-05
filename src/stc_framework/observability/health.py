@@ -10,9 +10,9 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from typing import Any
 
+from stc_framework._internal.ttl import now_iso
 from stc_framework.observability.metrics import get_metrics
 
 
@@ -26,7 +26,7 @@ class AdapterHealth:
 @dataclass
 class HealthReport:
     ok: bool
-    checked_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    checked_at: str = field(default_factory=now_iso)
     adapters: list[AdapterHealth] = field(default_factory=list)
     degradation_level: str = "normal"
     inflight_requests: int = 0

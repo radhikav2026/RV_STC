@@ -16,9 +16,9 @@ Storage is pluggable via :class:`KeyValueStore`.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from typing import Any
 
+from stc_framework._internal.ttl import now_iso
 from stc_framework.governance.events import AuditEvent
 from stc_framework.infrastructure.store import KeyValueStore
 from stc_framework.observability.audit import AuditLogger, AuditRecord
@@ -52,7 +52,7 @@ class LegalHold:
     issued_by: str = ""
     reason: str = ""
     active: bool = True
-    created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    created_at: str = field(default_factory=now_iso)
 
 
 _KEY_HOLD = "compliance:legal_hold:{hold_id}"
@@ -87,7 +87,7 @@ class LegalHoldManager:
             raise KeyError(f"hold not found: {hold_id!r}")
         raw["active"] = False
         raw["released_by"] = actor
-        raw["released_at"] = datetime.now(timezone.utc).isoformat()
+        raw["released_at"] = now_iso()
         raw["release_reason"] = reason
         await self._store.set(_KEY_HOLD.format(hold_id=hold_id), raw)
         if self._audit is not None:
@@ -166,7 +166,7 @@ def _from_dict(raw: dict[str, Any]) -> LegalHold:
         issued_by=raw.get("issued_by", ""),
         reason=raw.get("reason", ""),
         active=bool(raw.get("active", True)),
-        created_at=raw.get("created_at", datetime.now(timezone.utc).isoformat()),
+        created_at=raw.get("created_at", now_iso()),
     )
 
 

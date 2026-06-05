@@ -15,9 +15,9 @@ Both use :class:`KeyValueStore` for persistence.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from typing import Any
 
+from stc_framework._internal.ttl import now_iso
 from stc_framework.governance.events import AuditEvent
 from stc_framework.infrastructure.store import KeyValueStore
 from stc_framework.observability.audit import AuditLogger, AuditRecord
@@ -71,8 +71,8 @@ class TransparencyManager:
             customer_id=customer_id,
             tenant_id=tenant_id,
             consented=consented,
-            consented_at=datetime.now(timezone.utc).isoformat() if consented else "",
-            revoked_at=datetime.now(timezone.utc).isoformat() if not consented else None,
+            consented_at=now_iso() if consented else "",
+            revoked_at=now_iso() if not consented else None,
             version=version,
         )
         await self._store.set(

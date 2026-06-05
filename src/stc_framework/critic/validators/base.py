@@ -46,12 +46,9 @@ full checklist. The short version:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from typing import Any, Protocol, runtime_checkable
 
-
-def _utc_now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+from stc_framework._internal.ttl import now_iso
 
 
 @dataclass
@@ -75,7 +72,7 @@ class GuardrailResult:
     action: str = "pass"  # pass | warn | block | redact
     details: str = ""
     evidence: dict[str, Any] = field(default_factory=dict)
-    timestamp: str = field(default_factory=_utc_now)
+    timestamp: str = field(default_factory=now_iso)
 
 
 @dataclass
@@ -85,7 +82,7 @@ class GovernanceVerdict:
     results: list[GuardrailResult]
     action: str  # pass | warn | block | escalate
     escalation_level: str | None = None
-    timestamp: str = field(default_factory=_utc_now)
+    timestamp: str = field(default_factory=now_iso)
 
 
 @runtime_checkable

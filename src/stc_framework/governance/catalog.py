@@ -27,13 +27,12 @@ Example::
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from enum import Enum
 from typing import Any
 
 from stc_framework._internal.metrics_safe import safe_set
 from stc_framework._internal.scoring import dimension_score
-from stc_framework._internal.ttl import is_stale
+from stc_framework._internal.ttl import is_stale, now_iso
 from stc_framework.governance.events import AuditEvent
 from stc_framework.infrastructure.store import KeyValueStore
 from stc_framework.observability.audit import AuditLogger, AuditRecord
@@ -70,10 +69,6 @@ QUALITY_WEIGHTS: dict[str, float] = {
 }
 
 
-def _utc_now() -> str:
-    return datetime.now(timezone.utc).isoformat()
-
-
 @dataclass
 class QualityDimensions:
     """Six-dimension data-quality score, each in ``[0.0, 1.0]``."""
@@ -105,8 +100,8 @@ class DocumentAsset:
     asset_id: str
     status: AssetStatus = AssetStatus.ACTIVE
     quality: QualityDimensions = field(default_factory=QualityDimensions)
-    registered_at: str = field(default_factory=_utc_now)
-    updated_at: str = field(default_factory=_utc_now)
+    registered_at: str = field(default_factory=now_iso)
+    updated_at: str = field(default_factory=now_iso)
     freshness_sla_seconds: float = 30 * 24 * 3600  # 30 days
     metadata: dict[str, Any] = field(default_factory=dict)
 
@@ -115,8 +110,8 @@ class DocumentAsset:
 class ModelAsset:
     asset_id: str
     status: ModelStatus = ModelStatus.EVALUATION
-    registered_at: str = field(default_factory=_utc_now)
-    updated_at: str = field(default_factory=_utc_now)
+    registered_at: str = field(default_factory=now_iso)
+    updated_at: str = field(default_factory=now_iso)
     metadata: dict[str, Any] = field(default_factory=dict)
 
 
@@ -125,7 +120,7 @@ class PromptAsset:
     asset_id: str
     version: str
     active: bool = False
-    registered_at: str = field(default_factory=_utc_now)
+    registered_at: str = field(default_factory=now_iso)
     metadata: dict[str, Any] = field(default_factory=dict)
 
 
@@ -185,7 +180,7 @@ class DataCatalog:
         if existing is None:
             raise KeyError(f"document not registered: {asset_id!r}")
         existing.quality = quality
-        existing.updated_at = _utc_now()
+        existing.updated_at = now_iso()
         if quality.composite < self._quarantine_threshold and existing.status != AssetStatus.QUARANTINED:
             existing.status = AssetStatus.QUARANTINED
             await self._emit(
@@ -205,7 +200,7 @@ class DataCatalog:
         if existing is None:
             raise KeyError(f"document not registered: {asset_id!r}")
         existing.status = AssetStatus.DEPRECATED
-        existing.updated_at = _utc_now()
+        existing.updated_at = now_iso()
         await self._store.set(_KEY_DOC.format(asset_id=asset_id), asdict_safe(existing))
         await self._emit(
             AuditEvent.ASSET_DEPRECATED,
@@ -262,7 +257,7 @@ class DataCatalog:
             raise KeyError(f"model not registered: {asset_id!r}")
         existing = _model_from_dict(raw)
         existing.status = new_status
-        existing.updated_at = _utc_now()
+        existing.updated_at = now_iso()
         await self._store.set(_KEY_MODEL.format(asset_id=asset_id), asdict_safe(existing))
         if new_status in (ModelStatus.DEPRECATED, ModelStatus.RETIRED):
             await self._emit(
@@ -334,7 +329,7 @@ class DataCatalog:
         if self._audit is None:
             return
         record = AuditRecord(
-            timestamp=_utc_now(),
+            timestamp=now_iso(),
             event_type=event.value,
             persona="governance",
             extra=extra,
@@ -363,7 +358,7 @@ def asdict_safe(obj: DocumentAsset | ModelAsset | PromptAsset | QualityDimension
 
 
 def _asdict_recursive(obj: Any) -> Any:
-    if isinstance(obj, (DocumentAsset, ModelAsset, PromptAsset, QualityDimensions)):
+    if isinstance(obj, DocumentAsset | ModelAsset | PromptAsset | QualityDimensions):
         data = {}
         for k, v in vars(obj).items():
             data[k] = _asdict_recursive(v)
@@ -384,8 +379,8 @@ def _document_from_dict(raw: dict[str, Any]) -> DocumentAsset:
         asset_id=raw["asset_id"],
         status=AssetStatus(raw.get("status", AssetStatus.ACTIVE.value)),
         quality=quality,
-        registered_at=raw.get("registered_at", _utc_now()),
-        updated_at=raw.get("updated_at", _utc_now()),
+        registered_at=raw.get("registered_at", now_iso()),
+        updated_at=raw.get("updated_at", now_iso()),
         freshness_sla_seconds=float(raw.get("freshness_sla_seconds", 30 * 24 * 3600)),
         metadata=dict(raw.get("metadata", {})),
     )
@@ -395,8 +390,8 @@ def _model_from_dict(raw: dict[str, Any]) -> ModelAsset:
     return ModelAsset(
         asset_id=raw["asset_id"],
         status=ModelStatus(raw.get("status", ModelStatus.EVALUATION.value)),
-        registered_at=raw.get("registered_at", _utc_now()),
-        updated_at=raw.get("updated_at", _utc_now()),
+        registered_at=raw.get("registered_at", now_iso()),
+        updated_at=raw.get("updated_at", now_iso()),
         metadata=dict(raw.get("metadata", {})),
     )
 
@@ -406,7 +401,7 @@ def _prompt_from_dict(raw: dict[str, Any]) -> PromptAsset:
         asset_id=raw["asset_id"],
         version=raw["version"],
         active=bool(raw.get("active", False)),
-        registered_at=raw.get("registered_at", _utc_now()),
+        registered_at=raw.get("registered_at", now_iso()),
         metadata=dict(raw.get("metadata", {})),
     )
 

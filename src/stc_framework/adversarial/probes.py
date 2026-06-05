@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+
+from stc_framework._internal.ttl import now_iso
 
 
 @dataclass(frozen=True)
@@ -22,7 +23,7 @@ class ProbeResult:
     passed: bool
     actual_behavior: str
     details: str
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(default_factory=now_iso)
 
 
 FINANCIAL_QA_PROBES: list[AdversarialProbe] = [

@@ -25,14 +25,11 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from typing import Any, Generic, TypeVar
 
+from stc_framework._internal.ttl import now_iso
+
 TState = TypeVar("TState")
-
-
-def _utc_now() -> str:
-    return datetime.now(timezone.utc).isoformat()
 
 
 @dataclass(frozen=True)
@@ -86,7 +83,7 @@ class StatefulRecord(Generic[TState]):
         entry = Transition(
             from_state=self.state,
             to_state=new_state,
-            timestamp=_utc_now(),
+            timestamp=now_iso(),
             actor=actor,
             reason=reason,
             metadata=dict(metadata or {}),

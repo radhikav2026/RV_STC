@@ -32,17 +32,12 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from typing import Any
 
+from stc_framework._internal.ttl import now_iso
 from stc_framework.governance.events import AuditEvent
 from stc_framework.infrastructure.store import KeyValueStore
 from stc_framework.observability.audit import AuditLogger, AuditRecord
-
-
-def _utc_now() -> str:
-    return datetime.now(timezone.utc).isoformat()
-
 
 # ---- node types -----------------------------------------------------------
 
@@ -115,7 +110,7 @@ class LineageRecord:
     lineage_id: str
     tenant_id: str | None = None
     session_id: str | None = None
-    started_at: str = field(default_factory=_utc_now)
+    started_at: str = field(default_factory=now_iso)
     sealed_at: str | None = None
     sealed: bool = False
 
@@ -180,7 +175,7 @@ class LineageBuilder:
 
     def build(self) -> LineageRecord:
         self._record.sealed = True
-        self._record.sealed_at = _utc_now()
+        self._record.sealed_at = now_iso()
         return self._record
 
 
@@ -228,7 +223,7 @@ class LineageStore:
         if self._audit is not None:
             await self._audit.emit(
                 AuditRecord(
-                    timestamp=_utc_now(),
+                    timestamp=now_iso(),
                     trace_id=record.lineage_id,
                     tenant_id=record.tenant_id,
                     event_type=AuditEvent.LINEAGE_RECORDED.value,
@@ -334,7 +329,7 @@ def _record_from_dict(raw: dict[str, Any]) -> LineageRecord:
         lineage_id=raw["lineage_id"],
         tenant_id=raw.get("tenant_id"),
         session_id=raw.get("session_id"),
-        started_at=raw.get("started_at", _utc_now()),
+        started_at=raw.get("started_at", now_iso()),
         sealed_at=raw.get("sealed_at"),
         sealed=bool(raw.get("sealed", False)),
         sources=[SourceDocumentNode(**s) for s in raw.get("sources", [])],
