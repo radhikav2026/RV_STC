@@ -44,7 +44,6 @@ import os
 import secrets
 import threading
 from collections.abc import Iterator
-from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field
@@ -53,17 +52,15 @@ if TYPE_CHECKING:
     from stc_framework.adapters.audit_backend.base import AuditBackend
 
 
+from stc_framework._internal.ttl import now_iso
+
 _GENESIS_HASH = "0" * 64
-
-
-def _utcnow_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
 
 
 class AuditRecord(BaseModel):
     """A single immutable audit log entry."""
 
-    timestamp: str = Field(default_factory=_utcnow_iso)
+    timestamp: str = Field(default_factory=now_iso)
     trace_id: str | None = None
     request_id: str | None = None
     tenant_id: str | None = None

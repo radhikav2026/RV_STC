@@ -26,7 +26,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from stc_framework._internal.metrics_safe import safe_inc
-from stc_framework._internal.ttl import TTL
+from stc_framework._internal.ttl import TTL, now_iso
 from stc_framework.errors import SessionExpired
 from stc_framework.governance.events import AuditEvent
 from stc_framework.infrastructure.store import KeyValueStore
@@ -39,7 +39,7 @@ class SessionMetadata:
     session_id: str
     tenant_id: str = ""
     data_tier: str = "public"
-    created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    created_at: str = field(default_factory=now_iso)
     expires_at: str = ""
     request_count: int = 0
     metadata: dict[str, Any] = field(default_factory=dict)

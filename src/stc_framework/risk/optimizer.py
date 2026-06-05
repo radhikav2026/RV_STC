@@ -25,11 +25,11 @@ level (fall back to v0.2.0 routing, flip to degraded mode, etc.).
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from enum import Enum
 from typing import Any
 
 from stc_framework._internal.scoring import WeightedScore, weighted_average
+from stc_framework._internal.ttl import now_iso
 from stc_framework.errors import RiskOptimizerVeto
 from stc_framework.governance.events import AuditEvent
 from stc_framework.observability.audit import AuditLogger, AuditRecord
@@ -76,7 +76,7 @@ class OptimizationDecision:
     candidates: list[OptimizationCandidate]
     decision_reason: str = ""
     risk_override: bool = False
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(default_factory=now_iso)
 
 
 # ---------- evaluators ---------------------------------------------------

@@ -17,10 +17,10 @@ from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from enum import Enum
 from typing import Any
 
+from stc_framework._internal.ttl import now_iso
 from stc_framework.security.patterns import Pattern, PatternCatalog, default_pen_catalog
 
 
@@ -44,7 +44,7 @@ class PenTestResult:
     mitre: str = ""
     owasp: str = ""
     remediation: str = ""
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(default_factory=now_iso)
 
 
 # Probe function type: async. Takes a payload string, returns "blocked"

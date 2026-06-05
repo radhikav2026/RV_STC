@@ -22,11 +22,11 @@ import asyncio
 import time
 from collections import defaultdict, deque
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from enum import Enum
 from typing import Any
 
 from stc_framework._internal.metrics_safe import safe_inc
+from stc_framework._internal.ttl import now_iso
 from stc_framework.errors import (
     BehavioralAnomalyDetected,
     DDoSDetected,
@@ -69,7 +69,7 @@ class ThreatAlert:
     severity: ThreatSeverity
     source: str  # e.g. IP, session_id, tenant_id
     reason: str
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(default_factory=now_iso)
     metadata: dict[str, Any] = field(default_factory=dict)
 
 

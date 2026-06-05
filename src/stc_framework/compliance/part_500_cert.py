@@ -12,9 +12,9 @@ step produces a structured dict suitable for PDF / HTML rendering.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from typing import Any
 
+from stc_framework._internal.ttl import now_iso
 from stc_framework.governance.events import AuditEvent
 from stc_framework.infrastructure.store import KeyValueStore
 from stc_framework.observability.audit import AuditLogger, AuditRecord
@@ -48,7 +48,7 @@ class EvidenceItem:
     description: str = ""
     status: str = "satisfied"  # satisfied | gap | exception
     evidence_url: str = ""
-    collected_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    collected_at: str = field(default_factory=now_iso)
     metadata: dict[str, Any] = field(default_factory=dict)
 
 
@@ -132,7 +132,7 @@ class Part500CertificationAssembler:
                 status_counts[ev.get("status", "satisfied")] = status_counts.get(ev.get("status", "satisfied"), 0) + 1
         return {
             "certification_year": certification_year,
-            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "generated_at": now_iso(),
             "sections": sections,
             "section_count": len(PART_500_SECTIONS),
             "status_counts": status_counts,

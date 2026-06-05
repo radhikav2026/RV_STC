@@ -22,6 +22,7 @@ from enum import Enum
 from typing import Any
 
 from stc_framework._internal.alerter import AlertLevel, Thresholds
+from stc_framework._internal.ttl import now_iso
 from stc_framework.governance.events import AuditEvent
 from stc_framework.infrastructure.store import KeyValueStore
 from stc_framework.observability.audit import AuditLogger, AuditRecord
@@ -46,7 +47,7 @@ class IncidentNotification:
     incident_id: str
     severity: str = "high"
     status: NotificationStatus = NotificationStatus.DRAFTED
-    discovered_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    discovered_at: str = field(default_factory=now_iso)
     deadline: str = ""
     approver: str = ""
     submitted_at: str = ""
@@ -121,7 +122,7 @@ class NYDFSNotificationEngine:
         if not raw:
             raise KeyError(notification_id)
         raw["status"] = NotificationStatus.SUBMITTED.value
-        raw["submitted_at"] = datetime.now(timezone.utc).isoformat()
+        raw["submitted_at"] = now_iso()
         await self._store.set(_KEY.format(notification_id=notification_id), raw)
         if self._audit is not None:
             await self._audit.emit(

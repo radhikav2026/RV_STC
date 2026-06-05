@@ -18,12 +18,12 @@ RISK_* events for every lifecycle transition.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from enum import Enum
 from typing import Any
 
 from stc_framework._internal.metrics_safe import safe_set
 from stc_framework._internal.state_machine import StatefulRecord
+from stc_framework._internal.ttl import now_iso
 from stc_framework.governance.events import AuditEvent
 from stc_framework.infrastructure.store import KeyValueStore
 from stc_framework.observability.audit import AuditLogger, AuditRecord
@@ -121,7 +121,7 @@ class Risk:
     treatment: RiskTreatment | None = None
     linked_kris: list[str] = field(default_factory=list)
     owner: str = ""
-    created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    created_at: str = field(default_factory=now_iso)
     metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
@@ -346,7 +346,7 @@ def _record_from_dict(raw: dict[str, Any]) -> RiskRecord:
         treatment=treatment,
         linked_kris=list(r.get("linked_kris", [])),
         owner=r.get("owner", ""),
-        created_at=r.get("created_at", datetime.now(timezone.utc).isoformat()),
+        created_at=r.get("created_at", now_iso()),
         metadata=dict(r.get("metadata", {})),
     )
     state: StatefulRecord[RiskState] = StatefulRecord(state=RiskState(raw.get("state", RiskState.IDENTIFIED.value)))

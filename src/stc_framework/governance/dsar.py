@@ -11,8 +11,9 @@ can prove the request was served.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from typing import Any
+
+from stc_framework._internal.ttl import now_iso
 
 
 @dataclass
@@ -20,7 +21,7 @@ class DSARRecord:
     """Aggregated view of everything a tenant has touched in the system."""
 
     tenant_id: str
-    exported_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    exported_at: str = field(default_factory=now_iso)
     audit_records: list[dict[str, Any]] = field(default_factory=list)
     history_records: list[dict[str, Any]] = field(default_factory=list)
     vector_documents: list[dict[str, Any]] = field(default_factory=list)

@@ -17,12 +17,12 @@ process restarts work out of the box.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from enum import Enum
 from typing import Any
 
 from stc_framework._internal.alerter import AlertLevel, Thresholds
 from stc_framework._internal.metrics_safe import safe_set
+from stc_framework._internal.ttl import now_iso
 from stc_framework.governance.events import AuditEvent
 from stc_framework.infrastructure.store import KeyValueStore
 from stc_framework.observability.audit import AuditLogger, AuditRecord
@@ -65,7 +65,7 @@ class KRIMeasurement:
     kri_id: str
     value: float
     status: KRIStatus
-    recorded_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    recorded_at: str = field(default_factory=now_iso)
     metadata: dict[str, Any] = field(default_factory=dict)
 
 
@@ -275,7 +275,7 @@ class KRIEngine:
             kri_id=kri_id,
             value=float(raw["value"]),
             status=KRIStatus(raw["status"]),
-            recorded_at=raw.get("recorded_at", datetime.now(timezone.utc).isoformat()),
+            recorded_at=raw.get("recorded_at", now_iso()),
         )
 
     async def dashboard(self) -> dict[str, Any]:

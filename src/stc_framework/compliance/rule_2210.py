@@ -20,11 +20,11 @@ principal approval queue.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from enum import Enum
 from typing import Any
 
 from stc_framework._internal.metrics_safe import safe_inc
+from stc_framework._internal.ttl import now_iso
 from stc_framework.compliance.patterns import (
     PatternCatalog,
     default_finra_catalog,
@@ -93,7 +93,7 @@ class ReviewResult:
     fair_balance_score: float = 1.0
     verdict: ReviewDecision = ReviewDecision.AUTO_APPROVED
     requires_principal: bool = False
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(default_factory=now_iso)
 
     @property
     def critical_count(self) -> int:
@@ -213,7 +213,7 @@ class PrincipalApprovalQueue:
                 "item_id": item_id,
                 "content": content,
                 "review": _serialize_review(review),
-                "submitted_at": datetime.now(timezone.utc).isoformat(),
+                "submitted_at": now_iso(),
                 "status": "pending",
             },
         )
@@ -264,7 +264,7 @@ class PrincipalApprovalQueue:
         raw["status"] = status
         raw["resolved_by"] = actor
         raw["notes"] = notes
-        raw["resolved_at"] = datetime.now(timezone.utc).isoformat()
+        raw["resolved_at"] = now_iso()
         await self._store.set(_KEY_QUEUE.format(queue_id=item_id), raw)
 
 
