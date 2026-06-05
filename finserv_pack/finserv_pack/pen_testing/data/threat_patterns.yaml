@@ -1,0 +1,39 @@
+# Runtime threat-detection payload signatures.
+# These catch secondary indicators that complement the injection detector.
+
+patterns:
+  - name: model_extraction_probe
+    regex: "(?i)(list your (parameters|weights|system prompt)|reveal (the )?(full|entire) (prompt|instructions))"
+    severity: high
+    description: "Query pattern associated with model-extraction attacks."
+    metadata:
+      mitre: AML.T0037
+      owasp: LLM06
+      category: model_extraction
+
+  - name: data_exfiltration_token
+    regex: "STC_TOK_[a-f0-9]{12,}"
+    severity: high
+    description: "Surrogate token appearing in a returned response — indicates detokenisation leak."
+    metadata:
+      mitre: AML.T0056
+      owasp: LLM06
+      category: data_exfiltration
+
+  - name: base64_payload
+    regex: "[A-Za-z0-9+/]{80,}={0,2}"
+    severity: medium
+    description: "Large base64 blob — candidate for smuggled payload."
+    metadata:
+      mitre: AML.T0051
+      owasp: LLM01
+      category: encoding_bypass
+
+  - name: url_exfil_beacon
+    regex: "(?i)https?://[a-z0-9.-]+/[^\\s]*\\?.*(data|payload|token|secret)="
+    severity: high
+    description: "Outbound URL with a suspicious exfiltration query parameter."
+    metadata:
+      mitre: AML.T0056
+      owasp: LLM06
+      category: data_exfiltration

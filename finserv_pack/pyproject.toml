@@ -1,0 +1,33 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "finserv-pack"
+version = "0.1.0"
+description = "Financial services AI guardrails pack — Reg BI, numerical accuracy, bias detection, hallucination grounding, transparency/disclosure, PII redaction, and pen testing."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [
+    { name = "Radhika Venkatraman" },
+]
+keywords = ["finserv", "guardrails", "compliance", "ai-governance", "reg-bi", "finra", "sec"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Office/Business :: Financial",
+    "Topic :: Security",
+]
+
+dependencies = ["pyyaml>=6.0"]  # Only dependency: YAML catalog loading
+
+[project.optional-dependencies]
+presidio = ["presidio-analyzer>=2.2", "presidio-anonymizer>=2.2"]
+dev = ["pytest>=7.0", "pytest-asyncio>=0.21"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
